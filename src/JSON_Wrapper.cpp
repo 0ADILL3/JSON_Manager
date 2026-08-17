@@ -6,7 +6,7 @@ bool JSON_Wrapper::deserialization_error_(DeserializationError error)
 {
   if (error)
   {
-    Serial.printf("[JSON_Wrapper] Parse Error: %s\n", error.c_str());
+    JSON_WRAPPER_LOG_F("Parse Error: %s\n", error.c_str());
     return false;
   }
   return true;
@@ -19,13 +19,13 @@ void JSON_Wrapper::begin(const char *json_file)
   #if defined(ESP32)
     if (!LittleFS.begin(true))
     {
-      Serial.println("[JSON_Wrapper] LittleFS failed!");
+      JSON_WRAPPER_LOG_F("LittleFS failed!\n");
       return;
     }
   #else
     if (!LittleFS.begin())
     {
-      Serial.println("[JSON_Wrapper] LittleFS failed!");
+      JSON_WRAPPER_LOG_F("LittleFS failed!\n");
       return;
     }
   #endif
@@ -51,7 +51,7 @@ bool JSON_Wrapper::load_from_file()
 {
   if (!has_file())
   {
-    Serial.println("[JSON_Wrapper] File not found. Creating a new one...");
+    JSON_WRAPPER_LOG_F("File not found. Creating a new one...\n");
     doc_.clear();
     save_to_file();
     return false;
@@ -60,7 +60,7 @@ bool JSON_Wrapper::load_from_file()
   File file = LittleFS.open(json_file_, "r");
   if (!file)
   {
-    Serial.println("[JSON_Wrapper] File open failed.");
+    JSON_WRAPPER_LOG_F("File open failed.\n");
     return false;
   }
   
@@ -75,7 +75,7 @@ bool JSON_Wrapper::save_to_file()
   File file = LittleFS.open(json_file_, "w");
   if (!file)
   {
-    Serial.println("[JSON_Wrapper] File open failed.");
+    JSON_WRAPPER_LOG_F("File open failed.\n");
     return false;
   }
 
@@ -97,12 +97,12 @@ bool JSON_Wrapper::remove_file()
   {
     if (LittleFS.remove(json_file_))
     {
-      Serial.println("[JSON_Wrapper] File removed successfully.");
+      JSON_WRAPPER_LOG_F("File removed successfully.\n");
       return true;
     }
     else
     {
-      Serial.println("[JSON_Wrapper] Failed to remove file.");
+      JSON_WRAPPER_LOG_F("Failed to remove file.\n");
       return false;
     }
   }
@@ -112,18 +112,18 @@ bool JSON_Wrapper::remove_file()
 void JSON_Wrapper::pretty_print()
 {
   serializeJsonPretty(doc_, Serial);
-  Serial.println();
+  JSON_WRAPPER_LOG_LN();
 }
 
 void JSON_Wrapper::list_json_files()
 {
-  Serial.println("[JSON_Wrapper] Scanning LittleFS for .json files...");
+  JSON_WRAPPER_LOG_F("Scanning LittleFS for .json files...\n");
 
   #if defined(ESP32)
     File root = LittleFS.open("/");
     if (!root || !root.isDirectory())
     {
-      Serial.println("[JSON_Wrapper] Failed to open root directory.");
+      JSON_WRAPPER_LOG_F("Failed to open root directory.\n");
       return;
     }
 
@@ -135,17 +135,17 @@ void JSON_Wrapper::list_json_files()
       String fileName = file.name();
       if (fileName.endsWith(".json"))
       {
-        Serial.print("  -> /");
-        Serial.print(fileName);
-        Serial.print(" (");
-        Serial.print(file.size());
-        Serial.println(" bytes)");
+        JSON_WRAPPER_LOG("  -> /");
+        JSON_WRAPPER_LOG(fileName);
+        JSON_WRAPPER_LOG(" (");
+        JSON_WRAPPER_LOG(file.size());
+        JSON_WRAPPER_LOG_LN(" bytes)");
         found = true;
       }
       file = root.openNextFile();
     }
     
-    if (!found) Serial.println("  (.json file not found)");
+    if (!found) JSON_WRAPPER_LOG_LN("  (.json file not found)");
 
   #elif defined(ESP8266)
     Dir dir = LittleFS.openDir("/");
@@ -156,22 +156,22 @@ void JSON_Wrapper::list_json_files()
       String fileName = dir.fileName();
       if (fileName.endsWith(".json"))
       {
-        Serial.print("  -> ");
-        Serial.print(fileName);
-        Serial.print(" (");
-        Serial.print(dir.fileSize());
-        Serial.println(" bytes)");
+        JSON_WRAPPER_LOG("  -> ");
+        JSON_WRAPPER_LOG(fileName);
+        JSON_WRAPPER_LOG(" (");
+        JSON_WRAPPER_LOG(dir.fileSize());
+        JSON_WRAPPER_LOG_LN(" bytes)");
         found = true;
       }
     }
     
-    if (!found) Serial.println("  (.json file not found)");
+    if (!found) JSON_WRAPPER_LOG_LN("  (.json file not found)");
 
   #else
-    Serial.println("[JSON_Wrapper] Unsupported platform for listing files.");
+    JSON_WRAPPER_LOG_F("Unsupported platform for listing files.\n");
   #endif
 
-  Serial.println("------------------------------------------");
+  JSON_WRAPPER_LOG_LN("------------------------------------------");
 }
 
 JsonDocument &JSON_Wrapper::get_JSON_Document() {return doc_;}
