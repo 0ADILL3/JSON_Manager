@@ -87,6 +87,8 @@ bool JSON_Wrapper::save_to_file()
 
 bool JSON_Wrapper::has_key(const char *key) {return !doc_[key].isNull();}
 
+void JSON_Wrapper::remove(const char *key){doc_.remove(key);}
+
 bool JSON_Wrapper::has_file() {return LittleFS.exists(json_file_);}
 
 void JSON_Wrapper::clear() {doc_.clear();}
@@ -107,6 +109,12 @@ bool JSON_Wrapper::remove_file()
     }
   }
   return true;
+}
+
+void JSON_Wrapper::print()
+{
+  serializeJson(doc_, Serial);
+  JSON_WRAPPER_LOG_LN();
 }
 
 void JSON_Wrapper::pretty_print()
@@ -172,6 +180,15 @@ void JSON_Wrapper::list_json_files()
   #endif
 
   JSON_WRAPPER_LOG_LN("------------------------------------------");
+}
+
+size_t JSON_Wrapper::get_array_size(const char *key)
+{
+  if (doc_[key].is<JsonArray>())
+  {
+    return doc_[key].as<JsonArray>().size();
+  }
+  return 0;
 }
 
 JsonDocument &JSON_Wrapper::get_JSON_Document() {return doc_;}

@@ -9,9 +9,9 @@
 #define DEBUG_JSON_WRAPPER 1
 
 #if DEBUG_JSON_WRAPPER
-  #define JSON_WRAPPER_LOG(x) do {Serial.print(x)} while (0)
+  #define JSON_WRAPPER_LOG(x) do {Serial.print(x);} while (0)
   #define JSON_WRAPPER_LOG_F(fmt, ...) do {Serial.printf("\n[JSON_Wrapper] " fmt, ##__VA_ARGS__);} while (0)
-  #define JSON_WRAPPER_LOG_LN(x) do {Serial.println(x)} while (0)
+  #define JSON_WRAPPER_LOG_LN(x) do {Serial.println(x);} while (0)
 #else
   #define JSON_WRAPPER_LOG(...) do {} while (0)
   #define JSON_WRAPPER_LOG_F(...) do {} while (0)
@@ -71,6 +71,12 @@ class JSON_Wrapper {
     bool has_key(const char *key);
 
     /**
+     * @brief Menghapus key tertentu dan nilainya dari dokumen JSON.
+     * @param key Kunci (key) yang ingin dihapus.
+     */
+    void remove(const char *key);
+
+    /**
      * @brief Memeriksa apakah file JSON yang dideklarasikan ada di dalam memori LittleFS.
      * @return true jika file ada, false jika tidak.
      */
@@ -86,6 +92,11 @@ class JSON_Wrapper {
      * @return true jika file berhasil dihapus atau sudah tidak ada, false jika gagal dihapus.
      */
     bool remove_file();
+    
+    /**
+     * @brief Mencetak isi JsonDocument ke Serial Monitor.
+     */
+    void print();
 
     /**
      * @brief Mencetak isi JsonDocument dengan format yang rapi (pretty print) ke Serial Monitor.
@@ -96,6 +107,13 @@ class JSON_Wrapper {
      * @brief Fungsi statis untuk memindai dan menampilkan daftar semua file .json di LittleFS ke Serial Monitor.
      */
     static void list_json_files();
+    
+    /**
+     * @brief Mendapatkan jumlah elemen dari sebuah key JSON yang berupa array.
+     * @param key Kunci (key) JSON yang ingin dicek.
+     * @return Jumlah elemen di dalam array. Mengembalikan 0 jika key tidak ada atau bukan array.
+     */
+    size_t get_array_size(const char *key);
 
     /**
      * @brief Mengambil referensi langsung ke JsonDocument internal.
@@ -122,9 +140,52 @@ class JSON_Wrapper {
     template <typename T>
     T get(const char *key, T default_value)
     {
-      if (doc_[key].is<T>()) {
+      if (doc_[key].is<T>())
+      {
         return doc_[key].as<T>();
       }
       return default_value;
+    }
+
+    /**
+     * @brief Memasukkan atau menimpa nilai array bawaan C++ ke dalam key JSON tertentu.
+     * @tparam T Tipe data dari elemen array.
+     * @tparam N Ukuran atau jumlah elemen dari array (dihitung otomatis saat kompilasi).
+     * @param key Kunci (key) JSON tempat array akan disimpan.
+     * @param values Array bawaan C++ (statis) yang berisi nilai-nilai untuk dimasukkan.
+     */
+    template <typename T, size_t N>
+    void set_array(const char *key, const T (&values)[N])
+    {
+      JsonArray arr = doc_[key].to<JsonArray>();
+
+      for (size_t i = 0; i < N; i++)
+      {
+        arr.add(values[i]);
+      }
+    }
+    
+    /**
+     * @brief Menambahkan (append) satu elemen tunggal ke bagian akhir array di dalam JSON.
+     * Jika key belum ada atau nilainya bukan array, akan dikonversi menjadi array baru secara otomatis.
+     * @tparam T Tipe data dari nilai yang akan ditambahkan.
+     * @param key Kunci (key) JSON dari array yang dituju.
+     * @param value Nilai baru yang akan disisipkan ke dalam array tersebut.
+     */
+    template <typename T>
+    void add_array(const char *key, T value)
+    {
+      JsonArray arr;
+
+      if (doc_[key].is<JsonArray>())
+      {
+        arr = doc_[key].as<JsonArray>();
+      }
+      else
+      {
+        arr = doc_[key].to<JsonArray>();
+      }
+
+      arr.add(value);
     }
 };
