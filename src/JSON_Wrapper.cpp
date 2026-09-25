@@ -85,13 +85,7 @@ bool JSON_Wrapper::save_to_file()
   return true;
 }
 
-bool JSON_Wrapper::has_key(const char *key) {return !doc_[key].isNull();}
-
-void JSON_Wrapper::remove(const char *key){doc_.remove(key);}
-
 bool JSON_Wrapper::has_file() {return LittleFS.exists(json_file_);}
-
-void JSON_Wrapper::clear() {doc_.clear();}
 
 bool JSON_Wrapper::remove_file()
 {
@@ -111,6 +105,12 @@ bool JSON_Wrapper::remove_file()
   return true;
 }
 
+bool JSON_Wrapper::has_key(const char *key) {return !doc_[key].isNull();}
+
+void JSON_Wrapper::remove_key(const char *key){doc_.remove(key);}
+
+void JSON_Wrapper::clear() {doc_.clear();}
+
 void JSON_Wrapper::print()
 {
   serializeJson(doc_, Serial);
@@ -121,6 +121,44 @@ void JSON_Wrapper::pretty_print()
 {
   serializeJsonPretty(doc_, Serial);
   JSON_WRAPPER_LOG_LN();
+}
+
+size_t JSON_Wrapper::file_size()
+{
+  if (!has_file()) return 0;
+
+  File file = LittleFS.open(json_file_, "r");
+  if (!file) return 0;
+
+  size_t size = file.size();
+  file.close();
+  return size;
+}
+
+void JSON_Wrapper::storage_info()
+{
+  JSON_WRAPPER_LOG_F("--- LittleFS Storage Info ---");
+
+  #if defined(ESP32)
+    size_t total_bytes = LittleFS.totalBytes();
+    size_t used_bytes = LittleFS.usedBytes();
+
+  #elif defined(ESP8266)
+    FSInfo fs_info;
+    LittleFS.info(fs_info);
+    size_t total_bytes = fs_info.totalBytes;
+    size_t used_bytes = fs_info.usedBytes;
+
+  #else
+    JSON_WRAPPER_LOG_F("Unsupported platform for storage info.\n");
+    return;
+  #endif
+
+  size_t available_bytes = total_bytes - used_bytes;
+
+  JSON_WRAPPER_LOG_F("Total Space : %u bytes", total_bytes);
+  JSON_WRAPPER_LOG_F("Used Space  : %u bytes", used_bytes);
+  JSON_WRAPPER_LOG_F("Available   : %u bytes\n", available_bytes);
 }
 
 void JSON_Wrapper::list_json_files()

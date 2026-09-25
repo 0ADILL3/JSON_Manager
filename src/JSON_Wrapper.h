@@ -64,6 +64,18 @@ class JSON_Wrapper {
     bool save_to_file();
 
     /**
+     * @brief Memeriksa apakah file JSON yang dideklarasikan ada di dalam memori LittleFS.
+     * @return true jika file ada, false jika tidak.
+     */
+    bool has_file();
+
+    /**
+     * @brief Menghapus file JSON dari sistem file LittleFS.
+     * @return true jika file berhasil dihapus atau sudah tidak ada, false jika gagal dihapus.
+     */
+    bool remove_file();
+    
+    /**
      * @brief Memeriksa apakah sebuah key (kunci) tertentu ada di dalam dokumen JSON.
      * @param key Nama kunci yang ingin dicari.
      * @return true jika key ditemukan dan tidak null, false sebaliknya.
@@ -74,24 +86,12 @@ class JSON_Wrapper {
      * @brief Menghapus key tertentu dan nilainya dari dokumen JSON.
      * @param key Kunci (key) yang ingin dihapus.
      */
-    void remove(const char *key);
-
-    /**
-     * @brief Memeriksa apakah file JSON yang dideklarasikan ada di dalam memori LittleFS.
-     * @return true jika file ada, false jika tidak.
-     */
-    bool has_file();
-
+    void remove_key(const char *key);
+    
     /**
      * @brief Membersihkan seluruh isi dari JsonDocument internal (mengosongkan data).
      */
     void clear();
-
-    /**
-     * @brief Menghapus file JSON dari sistem file LittleFS.
-     * @return true jika file berhasil dihapus atau sudah tidak ada, false jika gagal dihapus.
-     */
-    bool remove_file();
     
     /**
      * @brief Mencetak isi JsonDocument ke Serial Monitor.
@@ -102,24 +102,22 @@ class JSON_Wrapper {
      * @brief Mencetak isi JsonDocument dengan format yang rapi (pretty print) ke Serial Monitor.
      */
     void pretty_print();
+    
+    /**
+     * @brief Mendapatkan ukuran file JSON yang sedang digunakan saat ini.
+     * @return Ukuran file dalam byte, atau 0 jika gagal/file tidak ada.
+     */
+    size_t file_size();
+
+    /**
+     * @brief Menampilkan informasi kapasitas memori LittleFS ke Serial Monitor.
+     */
+    static void storage_info();
 
     /**
      * @brief Fungsi statis untuk memindai dan menampilkan daftar semua file .json di LittleFS ke Serial Monitor.
      */
     static void list_json_files();
-    
-    /**
-     * @brief Mendapatkan jumlah elemen dari sebuah key JSON yang berupa array.
-     * @param key Kunci (key) JSON yang ingin dicek.
-     * @return Jumlah elemen di dalam array. Mengembalikan 0 jika key tidak ada atau bukan array.
-     */
-    size_t get_array_size(const char *key);
-
-    /**
-     * @brief Mengambil referensi langsung ke JsonDocument internal.
-     * @return Referensi ke objek JsonDocument.
-     */
-    JsonDocument &get_JSON_Document();
 
     /**
      * @brief Memasukkan atau memperbarui nilai berdasarkan key tertentu.
@@ -188,4 +186,17 @@ class JSON_Wrapper {
 
       arr.add(value);
     }
+    
+    /**
+     * @brief Mendapatkan jumlah elemen dari sebuah key JSON yang berupa array.
+     * @param key Kunci (key) JSON yang ingin dicek.
+     * @return Jumlah elemen di dalam array. Mengembalikan 0 jika key tidak ada atau bukan array.
+     */
+    size_t get_array_size(const char *key);
+    
+    /**
+     * @brief Mengambil referensi langsung ke JsonDocument internal.
+     * @return Referensi ke objek JsonDocument.
+     */
+    JsonDocument &get_JSON_Document();
 };
