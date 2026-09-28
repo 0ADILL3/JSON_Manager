@@ -1,14 +1,14 @@
 #include <Arduino.h>
-#include <JSON_Wrapper.h>
+#include <JSON_Manager.h>
 
 // Instansiasi objek config
-JSON_Wrapper config;
+JSON_Manager config;
 
 void setup() {
   Serial.begin(115200);
   delay(2000); // Waktu jeda agar Serial Monitor siap
   
-  Serial.println("\n--- Mulai Pengujian JSON_Wrapper ---");
+  Serial.println("\n--- Mulai Pengujian JSON_Manager ---");
 
   // 1. Inisialisasi LittleFS dengan nama file "/config.json" (dan format jika perlu pada ESP32)
   config.begin("/config.json");

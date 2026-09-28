@@ -4,32 +4,44 @@
 #include <ArduinoJson.h>
 #include <LittleFS.h> 
 
-#define JSON_FILENAME_MAX_LEN 32
-
-#define DEBUG_JSON_WRAPPER 1
-
-#if DEBUG_JSON_WRAPPER
-  #define JSON_WRAPPER_LOG(x) do {Serial.print(x);} while (0)
-  #define JSON_WRAPPER_LOG_F(fmt, ...) do {Serial.printf("\n[JSON_Wrapper] " fmt, ##__VA_ARGS__);} while (0)
-  #define JSON_WRAPPER_LOG_LN(x) do {Serial.println(x);} while (0)
-#else
-  #define JSON_WRAPPER_LOG(...) do {} while (0)
-  #define JSON_WRAPPER_LOG_F(...) do {} while (0)
-  #define JSON_WRAPPER_LOG_LN(...) do {} while (0)
+#ifndef JSON_MANAGER_FILENAME_MAX_LEN
+  #define JSON_MANAGER_FILENAME_MAX_LEN 32
 #endif
 
-class JSON_Wrapper {
+#define JSON_MANAGER_DEBUG 1
+
+#if JSON_MANAGER_DEBUG
+  #define JSON_MANAGER_LOG(x) do {Serial.print(x);} while (0)
+  #define JSON_MANAGER_LOG_F(fmt, ...) do {Serial.printf("\n[JSON_Manager] " fmt, ##__VA_ARGS__);} while (0)
+  #define JSON_MANAGER_LOG_LN(x) do {Serial.println(x);} while (0)
+#else
+  #define JSON_MANAGER_LOG(...) do {} while (0)
+  #define JSON_MANAGER_LOG_F(...) do {} while (0)
+  #define JSON_MANAGER_LOG_LN(...) do {} while (0)
+#endif
+
+/**
+ * @class JSON_Manager
+ * @brief Kelas utilitas untuk mengelola konfigurasi JSON pada memori Flash (LittleFS).
+ * 
+ * JSON_Manager adalah wrapper untuk ArduinoJson dan LittleFS yang dirancang khusus 
+ * untuk mikrokontroler ESP32 dan ESP8266. Kelas ini menyederhanakan proses membaca, 
+ * menulis, dan memodifikasi file JSON secara aman. Dengan memanfaatkan alokasi 
+ * memori statis dan penanganan error otomatis, kelas ini mencegah terjadinya 
+ * fragmentasi memori (Heap) serta menjaga stabilitas file system.
+ */
+class JSON_Manager {
   private:
     JsonDocument doc_;
-    char json_file_[JSON_FILENAME_MAX_LEN];
+    char json_file_[JSON_MANAGER_FILENAME_MAX_LEN];
 
     bool deserialization_error_(DeserializationError error);
 
   public:
     /**
-     * @brief Konstruktor default untuk inisialisasi JSON_Wrapper.
+     * @brief Konstruktor default untuk inisialisasi JSON_Manager.
      */
-    JSON_Wrapper();
+    JSON_Manager();
 
     /**
      * @brief Menginisialisasi kelas dan melakukan mount pada sistem file LittleFS.

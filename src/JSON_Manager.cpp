@@ -1,44 +1,44 @@
-#include "JSON_Wrapper.h"
+#include "JSON_Manager.h"
 
-JSON_Wrapper::JSON_Wrapper() {}
+JSON_Manager::JSON_Manager() {}
 
-bool JSON_Wrapper::deserialization_error_(DeserializationError error)
+bool JSON_Manager::deserialization_error_(DeserializationError error)
 {
   if (error)
   {
-    JSON_WRAPPER_LOG_F("Parse Error: %s\n", error.c_str());
+    JSON_MANAGER_LOG_F("Parse Error: %s\n", error.c_str());
     return false;
   }
   return true;
 }
 
-void JSON_Wrapper::begin(const char *json_file)
+void JSON_Manager::begin(const char *json_file)
 {
   strlcpy(json_file_, json_file, sizeof(json_file_));
 
   #if defined(ESP32)
     if (!LittleFS.begin(true))
     {
-      JSON_WRAPPER_LOG_F("LittleFS failed!\n");
+      JSON_MANAGER_LOG_F("LittleFS failed!\n");
       return;
     }
   #else
     if (!LittleFS.begin())
     {
-      JSON_WRAPPER_LOG_F("LittleFS failed!\n");
+      JSON_MANAGER_LOG_F("LittleFS failed!\n");
       return;
     }
   #endif
 }
 
-bool JSON_Wrapper::parse(const String &json_string)
+bool JSON_Manager::parse(const String &json_string)
 {
   DeserializationError error = deserializeJson(doc_, json_string);
 
   return deserialization_error_(error);
 }
 
-String JSON_Wrapper::stringify()
+String JSON_Manager::stringify()
 {
   String temp_json_str;
   temp_json_str.reserve(measureJson(doc_)+1); 
@@ -47,11 +47,11 @@ String JSON_Wrapper::stringify()
   return temp_json_str;
 }
 
-bool JSON_Wrapper::load_from_file()
+bool JSON_Manager::load_from_file()
 {
   if (!has_file())
   {
-    JSON_WRAPPER_LOG_F("File not found. Creating a new one...\n");
+    JSON_MANAGER_LOG_F("File not found. Creating a new one...\n");
     doc_.clear();
     save_to_file();
     return false;
@@ -60,7 +60,7 @@ bool JSON_Wrapper::load_from_file()
   File file = LittleFS.open(json_file_, "r");
   if (!file)
   {
-    JSON_WRAPPER_LOG_F("File open failed.\n");
+    JSON_MANAGER_LOG_F("File open failed.\n");
     return false;
   }
   
@@ -70,12 +70,12 @@ bool JSON_Wrapper::load_from_file()
   return deserialization_error_(error);
 }
 
-bool JSON_Wrapper::save_to_file()
+bool JSON_Manager::save_to_file()
 {
   File file = LittleFS.open(json_file_, "w");
   if (!file)
   {
-    JSON_WRAPPER_LOG_F("File open failed.\n");
+    JSON_MANAGER_LOG_F("File open failed.\n");
     return false;
   }
 
@@ -85,45 +85,45 @@ bool JSON_Wrapper::save_to_file()
   return true;
 }
 
-bool JSON_Wrapper::has_file() {return LittleFS.exists(json_file_);}
+bool JSON_Manager::has_file() {return LittleFS.exists(json_file_);}
 
-bool JSON_Wrapper::remove_file()
+bool JSON_Manager::remove_file()
 {
   if (has_file())
   {
     if (LittleFS.remove(json_file_))
     {
-      JSON_WRAPPER_LOG_F("File removed successfully.\n");
+      JSON_MANAGER_LOG_F("File removed successfully.\n");
       return true;
     }
     else
     {
-      JSON_WRAPPER_LOG_F("Failed to remove file.\n");
+      JSON_MANAGER_LOG_F("Failed to remove file.\n");
       return false;
     }
   }
   return true;
 }
 
-bool JSON_Wrapper::has_key(const char *key) {return !doc_[key].isNull();}
+bool JSON_Manager::has_key(const char *key) {return !doc_[key].isNull();}
 
-void JSON_Wrapper::remove_key(const char *key){doc_.remove(key);}
+void JSON_Manager::remove_key(const char *key){doc_.remove(key);}
 
-void JSON_Wrapper::clear() {doc_.clear();}
+void JSON_Manager::clear() {doc_.clear();}
 
-void JSON_Wrapper::print()
+void JSON_Manager::print()
 {
   serializeJson(doc_, Serial);
-  JSON_WRAPPER_LOG_LN();
+  JSON_MANAGER_LOG_LN();
 }
 
-void JSON_Wrapper::pretty_print()
+void JSON_Manager::pretty_print()
 {
   serializeJsonPretty(doc_, Serial);
-  JSON_WRAPPER_LOG_LN();
+  JSON_MANAGER_LOG_LN();
 }
 
-size_t JSON_Wrapper::file_size()
+size_t JSON_Manager::file_size()
 {
   if (!has_file()) return 0;
 
@@ -135,9 +135,9 @@ size_t JSON_Wrapper::file_size()
   return size;
 }
 
-void JSON_Wrapper::storage_info()
+void JSON_Manager::storage_info()
 {
-  JSON_WRAPPER_LOG_F("--- LittleFS Storage Info ---");
+  JSON_MANAGER_LOG_F("--- LittleFS Storage Info ---");
 
   #if defined(ESP32)
     size_t total_bytes = LittleFS.totalBytes();
@@ -150,26 +150,26 @@ void JSON_Wrapper::storage_info()
     size_t used_bytes = fs_info.usedBytes;
 
   #else
-    JSON_WRAPPER_LOG_F("Unsupported platform for storage info.\n");
+    JSON_MANAGER_LOG_F("Unsupported platform for storage info.\n");
     return;
   #endif
 
   size_t available_bytes = total_bytes - used_bytes;
 
-  JSON_WRAPPER_LOG_F("Total Space : %u bytes", total_bytes);
-  JSON_WRAPPER_LOG_F("Used Space  : %u bytes", used_bytes);
-  JSON_WRAPPER_LOG_F("Available   : %u bytes\n", available_bytes);
+  JSON_MANAGER_LOG_F("Total Space : %u bytes", total_bytes);
+  JSON_MANAGER_LOG_F("Used Space  : %u bytes", used_bytes);
+  JSON_MANAGER_LOG_F("Available   : %u bytes\n", available_bytes);
 }
 
-void JSON_Wrapper::list_json_files()
+void JSON_Manager::list_json_files()
 {
-  JSON_WRAPPER_LOG_F("Scanning LittleFS for .json files...\n");
+  JSON_MANAGER_LOG_F("Scanning LittleFS for .json files...\n");
 
   #if defined(ESP32)
     File root = LittleFS.open("/");
     if (!root || !root.isDirectory())
     {
-      JSON_WRAPPER_LOG_F("Failed to open root directory.\n");
+      JSON_MANAGER_LOG_F("Failed to open root directory.\n");
       return;
     }
 
@@ -181,17 +181,17 @@ void JSON_Wrapper::list_json_files()
       String fileName = file.name();
       if (fileName.endsWith(".json"))
       {
-        JSON_WRAPPER_LOG("  -> /");
-        JSON_WRAPPER_LOG(fileName);
-        JSON_WRAPPER_LOG(" (");
-        JSON_WRAPPER_LOG(file.size());
-        JSON_WRAPPER_LOG_LN(" bytes)");
+        JSON_MANAGER_LOG("  -> /");
+        JSON_MANAGER_LOG(fileName);
+        JSON_MANAGER_LOG(" (");
+        JSON_MANAGER_LOG(file.size());
+        JSON_MANAGER_LOG_LN(" bytes)");
         found = true;
       }
       file = root.openNextFile();
     }
     
-    if (!found) JSON_WRAPPER_LOG_LN("  (.json file not found)");
+    if (!found) JSON_MANAGER_LOG_LN("  (.json file not found)");
 
   #elif defined(ESP8266)
     Dir dir = LittleFS.openDir("/");
@@ -202,25 +202,25 @@ void JSON_Wrapper::list_json_files()
       String fileName = dir.fileName();
       if (fileName.endsWith(".json"))
       {
-        JSON_WRAPPER_LOG("  -> ");
-        JSON_WRAPPER_LOG(fileName);
-        JSON_WRAPPER_LOG(" (");
-        JSON_WRAPPER_LOG(dir.fileSize());
-        JSON_WRAPPER_LOG_LN(" bytes)");
+        JSON_MANAGER_LOG("  -> ");
+        JSON_MANAGER_LOG(fileName);
+        JSON_MANAGER_LOG(" (");
+        JSON_MANAGER_LOG(dir.fileSize());
+        JSON_MANAGER_LOG_LN(" bytes)");
         found = true;
       }
     }
     
-    if (!found) JSON_WRAPPER_LOG_LN("  (.json file not found)");
+    if (!found) JSON_MANAGER_LOG_LN("  (.json file not found)");
 
   #else
-    JSON_WRAPPER_LOG_F("Unsupported platform for listing files.\n");
+    JSON_MANAGER_LOG_F("Unsupported platform for listing files.\n");
   #endif
 
-  JSON_WRAPPER_LOG_LN("------------------------------------------");
+  JSON_MANAGER_LOG_LN("------------------------------------------");
 }
 
-size_t JSON_Wrapper::get_array_size(const char *key)
+size_t JSON_Manager::get_array_size(const char *key)
 {
   if (doc_[key].is<JsonArray>())
   {
@@ -229,4 +229,4 @@ size_t JSON_Wrapper::get_array_size(const char *key)
   return 0;
 }
 
-JsonDocument &JSON_Wrapper::get_JSON_Document() {return doc_;}
+JsonDocument &JSON_Manager::get_JSON_Document() {return doc_;}

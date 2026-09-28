@@ -1,6 +1,6 @@
-# JSON_Wrapper Library
+# JSON_Manager
 
-`JSON_Wrapper` adalah *library* utilitas ringan untuk mikrokontroler ESP32 dan ESP8266 yang membungkus (*wrap*) pustaka `ArduinoJson` dan `LittleFS`. 
+`JSON_Manager` adalah *library* utilitas ringan untuk mikrokontroler ESP32 dan ESP8266 yang membungkus pustaka `ArduinoJson` dan `LittleFS`. 
 
 *Library* ini dirancang khusus untuk mempermudah penyimpanan dan manipulasi konfigurasi JSON pada memori *flash* perangkat secara aman (bebas fragmentasi memori) dan stabil (menangani *file system fault* otomatis).
 
@@ -23,13 +23,13 @@ Pastikan Anda telah menginstal *library* berikut melalui Arduino Library Manager
 ## Contoh Singkat (API)
 
 ```cpp
-#include <JSON_Wrapper.h>
+#include <JSON_Manager.h>
 
-JSON_Wrapper config("/config.json");
+JSON_Manager config;
 
 void setup() {
   Serial.begin(115200);
-  config.begin(); 
+  config.begin("/config.json"); 
   config.load_from_file();
 
   // Membaca data dengan nilai default fallback
